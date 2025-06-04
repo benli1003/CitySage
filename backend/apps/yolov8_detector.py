@@ -1,34 +1,26 @@
-from inference import get_model
-import supervision as sv
-import cv2
+from roboflow import Roboflow
+from dotenv import load_dotenv
+import os
 
-# define the image url to use for inference
-#pull images from cams later on ****
-image_file = "taylor-swift-album-1989.jpeg"
-image = cv2.imread(image_file)
+# Load environment variables
+load_dotenv()
 
-# load a pre-trained yolov8n model
-# this is my trained model
-model = get_model(model_id="vehicle_detection_yolov8-rptry")
+# Step 1: Authenticate with your Roboflow API key
+rf = Roboflow(api_key = os.getenv("ROBOFLOW_API_KEY"))  # <-- replace with your actual API key
 
-# run inference on our chosen image, image can be a url, a numpy array, a PIL image, etc.
-# identify the objects in the image
-results = model.infer(image)[0]
+# Step 2: Load your project and versioned model
+project = rf.workspace("projects-qhyq6").project("vehicle_detection_yolov8-rptry")
+model = project.version(2).model  # adjust the version if you're using a different one
 
-# load the results into the supervision Detections api
-# this is for drawing the boxes
-detections = sv.Detections.from_inference(results)
+# Step 3: Local image to test
+image_path = "backend/data/images/traffic_image.png" # make sure this file exists in the same folder
 
-# create supervision annotators
-# create the bounding boxes
-bounding_box_annotator = sv.BoxAnnotator()
-label_annotator = sv.LabelAnnotator()
+# Step 4: Run inference
+prediction = model.predict(image_path, confidence=40, overlap=30).json()
 
-# annotate the image with our inference results
-annotated_image = bounding_box_annotator.annotate(
-    scene=image, detections=detections)
-annotated_image = label_annotator.annotate(
-    scene=annotated_image, detections=detections)
+# Step 5: Show results
+print("Detections:", prediction)
 
-# display the image
-sv.plot_image(annotated_image)
+# Step 6: Save annotated image
+model.predict(image_path).save("output/annotated/prediction_output.jpg")
+print("Annotated image saved as 'prediction_output.jpg'")
