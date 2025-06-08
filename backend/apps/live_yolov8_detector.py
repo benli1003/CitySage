@@ -14,7 +14,7 @@ project = rf.workspace("projects-qhyq6").project("vehicle_detection_yolov8-rptry
 model = project.version(4).model
 
 # Image stream URL
-IMAGE_URL = "https://ie.trafficland.com/v2.0/2193/huge?system=weatherbug-web&pubtoken=76e2fc1304db7ed72054f7f38a70e216407eaef98a32126d04f00e63e6fe8177&refreshRate=2000&rnd=1749334353192"
+IMAGE_URL = os.getenv("TRAFFIC_CAM_URL")
 while True:
     try:
         # Download the image
@@ -43,3 +43,4 @@ while True:
     except KeyboardInterrupt:
         print("Stopped by user.")
         break
+
