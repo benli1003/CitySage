@@ -1,6 +1,7 @@
 # Schedule the cron job to run the tweet scraper
 import time
-from twitter_trends import get_dc_trends
+from .twitter_trends import get_dc_trends
+from .twitter_query import search_tweets
 import json
 import os
 
@@ -10,11 +11,14 @@ TWEETS_FILE = os.path.join(os.path.dirname(__file__), "cached_tweets.json")
 # Call the get_dc_trends function to get the tending topics and then run search_tweets on each of them
 def get_latest_trends():
     print("Fetching tweets...")
-    tweets = get_dc_trends()
-    tweets_by_trends = {
-        trend: search_tweets(trend, max_results = 5)
-        for trend in trends
-    }
+    trends = get_dc_trends()
+    tweets_by_trends = {}
+    
+    for trend in trends:
+        print(f"Searching tweets for: {trend}")
+        tweets_by_trends[trend] = search_tweets(trend, max_results=10)
+        time.sleep(2)
+
     return tweets_by_trends
 
 
