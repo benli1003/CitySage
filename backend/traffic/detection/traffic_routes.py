@@ -4,7 +4,8 @@ from .database_summary import get_counts, generate_summary
 
 traffic = Blueprint("traffic", __name__)
 
-@traffic.route("/traffic-summary", methods=["GET"])
+# traffic summary for the last hour or whatever user specifies
+@traffic.route("/traffic-summary", methods = ["GET"])
 def traffic_summary():
     # validate hours
     hours_str = request.args.get("hours", "1")
@@ -28,10 +29,11 @@ def traffic_summary():
 
     return jsonify({
         "summary": summary,
-        "stats":    stats,
+        "stats": stats,
         "period": {
             "start": start.isoformat(),
-            "end":   end.isoformat(),
+            "end": end.isoformat(),
             "hours": hours
         }
     })
+    
