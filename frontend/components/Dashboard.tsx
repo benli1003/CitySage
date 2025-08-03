@@ -3,6 +3,7 @@ import React from 'react'
 import WmataBusFeed  from './WmataBusFeed'
 import WmataRailFeed from './WmataRailFeed'
 import TrafficSummary from './TrafficSummary'
+import WeatherFeed from './WeatherFeed';
 
 const Dashboard: React.FC = () => {
   return (
@@ -20,6 +21,10 @@ const Dashboard: React.FC = () => {
 
           {/* last 24 hours */}
           <TrafficSummary hours = {24} title = "Traffic in the Last 24 Hours" />
+        </div>
+
+        <div className="lg:col-span-1">
+          <WeatherFeed />
         </div>
 
         {/* wmata alerts*/}
