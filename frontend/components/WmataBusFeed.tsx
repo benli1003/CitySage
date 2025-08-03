@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 interface Alert {
   title: string;
@@ -9,35 +10,22 @@ interface Alert {
 const WmataBusFeed: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        console.log("Fetching from: http://localhost:5050/api/alerts/bus");
-
-        const res = await fetch("http://localhost:5050/api/alerts/bus", {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-
-        console.log("Response status:", res.status);
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error("Error response:", errorText);
-          throw new Error(`Failed to fetch WMATA alerts: ${res.status} ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        console.log("Received data:", data);
-        setAlerts(data.alerts || []);
+        console.log("Fetching from: /api/alerts/bus");
+        const res = await axios.get<{ alerts: Alert[] }>("/api/alerts/bus");
+        console.log("Response data:", res.data);
+        setAlerts(res.data.alerts || []);
       } catch (err: any) {
-        console.error("Fetch error details:", err);
-        setError(err.message);
+        console.error("Axios error details:", err);
+        if (err.response) {
+          setError(`Failed to fetch WMATA alerts: ${err.response.status} ${err.response.statusText}`);
+        } else {
+          setError(err.message);
+        }
       } finally {
         setLoading(false);
       }

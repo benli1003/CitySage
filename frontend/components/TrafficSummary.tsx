@@ -1,4 +1,3 @@
-// src/components/TrafficSummary.tsx
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
@@ -25,7 +24,7 @@ const TrafficSummary: React.FC<TrafficSummaryProps> = ({
   useEffect(() => {
     setLoading(true)
     axios
-      .get(`http://localhost:5050/api/traffic-summary?hours=${hours}`)
+      .get(`/api/traffic-summary?hours=${hours}`)
       .then((res) => {
         setSummary(res.data.summary)
         setStats(res.data.stats)

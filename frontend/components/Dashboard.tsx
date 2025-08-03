@@ -1,4 +1,3 @@
-// src/components/Dashboard.tsx
 import React from 'react'
 import WmataBusFeed  from './WmataBusFeed'
 import WmataRailFeed from './WmataRailFeed'
