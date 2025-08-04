@@ -34,15 +34,24 @@ def format_incidents(data, key):
         return []
 
     formatted = []
-    for incident in data[key]:
+    for i, incident in enumerate(data[key]):
+        incident_id = incident.get('IncidentID', f"{key}-{i}")
         formatted.append({
+            'id': incident_id,
             'title': incident.get('IncidentType', 'Alert'),
             'summary': incident.get('Description', 'No details available'),
-            'time': incident.get('DateUpdated', '')
+            'time': incident.get('DateUpdated', ''),
+            'severity': determine_severity(incident)
         })
 
     return formatted
 
-@wmata_alerts.route("/test", methods=["GET"])
-def test_endpoint():
-    return jsonify({"status": "working"}), 200
+def determine_severity(incident):
+    """Determine alert severity based on content"""
+    description = incident.get('Description', '').lower()
+    
+    if any(word in description for word in ['emergency', 'severe', 'closure']):
+        return 'critical'
+    elif any(word in description for word in ['delay', 'major']):
+        return 'major'
+    return 'minor'

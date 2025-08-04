@@ -21,7 +21,7 @@ def wmata_bus_incidents(api_key):
         return False
 
 def wmata_rail_incidents(api_key):
-    url = "http://api.wmata.com/Incidents.svc/json/Incidents"
+    url = "https://api.wmata.com/Incidents.svc/json/Incidents"
     headers = {
         'api_key': api_key
     }
