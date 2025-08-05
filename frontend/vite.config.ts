@@ -16,6 +16,9 @@ export default defineConfig(({ mode }) => ({
       }
     }
   },
+    optimizeDeps: {
+      exclude: ['lovable-tagger']
+  },
   plugins: [
     react(),
     mode === 'development' &&

@@ -23,7 +23,7 @@ def get_bus_alerts():
 def get_rail_alerts():
     try:
         data = wmata_rail_incidents(WMATA_API_KEY)
-        formatted = format_incidents(data, key = "RailIncidents")
+        formatted = format_incidents(data, key = "Incidents")
         return jsonify({"alerts": formatted}), 200
     except Exception as e:
         print(f"Error occurred: {str(e)}")

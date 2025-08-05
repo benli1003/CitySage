@@ -31,8 +31,7 @@ def wmata_rail_incidents(api_key):
         print(f"Response status: {response.status_code}")
         
         if response.status_code == 200:
-            data = response.json()
-            return {"RailIncidents": data.get("RailIncidents", [])}
+            return response.json()
         else:
             print(f"Error: API returned status code {response.status_code}")
             return False
