@@ -15,11 +15,11 @@ interface WMATAAlert {
 const getSeverityColor = (severity: string | undefined) => {
   switch (severity) {
     case "critical":
-      return "bg-destructive-muted border-destructive/20 text-destructive-foreground";
+      return "bg-red-100 border-red-200 text-red-800";
     case "major":
-      return "bg-warning-muted border-warning/20 text-warning-foreground";
+      return "bg-yellow-100 border-yellow-200 text-yellow-800";
     default:
-      return "bg-muted border-border text-muted-foreground";
+      return "bg-gray-100 border-gray-200 text-gray-800";
   }
 };
 
