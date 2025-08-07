@@ -13,12 +13,20 @@ def traffic_summary():
         hours = int(hours_str)
     except ValueError:
         return jsonify({"error": "Invalid 'hours' parameter"}), 400
+    
+    # parse for specific camera     
+    camera_id = request.args.get("camera_id")
 
     end = datetime.now()
     start = end - timedelta(hours=hours)
 
     # fetch and format stats
     raw = get_counts(start, end)
+    
+    # filter for specific camera
+    if camera_id:
+        raw = [r for r in raw if r[0] == camera_id]
+        
     stats = [
         {"camera_id": cam, "events": ev, "avg_per_min": float(avg)}
         for cam, ev, avg in raw
@@ -33,7 +41,8 @@ def traffic_summary():
         "period": {
             "start": start.isoformat(),
             "end": end.isoformat(),
-            "hours": hours
+            "hours": hours,
+            "camera": camera_id
         }
     })
     

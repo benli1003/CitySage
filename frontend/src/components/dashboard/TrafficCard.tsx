@@ -11,10 +11,16 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+const cameraFeeds = [
+  { id: "i95-north-of-i495", name: "I-95 Northbound just north of I-495" },
+  { id: "i495-east-of-i270", name: "I-495 Eastbound just east of I-270" }
+];
+
 const hoursOptions = [1, 3, 6, 12];
 
 export const TrafficCard = () => {
   const [hours, setHours] = useState(1);
+  const [camera, setCamera] = useState<"all" | string>("all");
   const [liveSummary, setLiveSummary] = useState("");
   const [loadingLive, setLoadingLive] = useState(false);
   const [errorLive, setErrorLive] = useState<string | null>(null);
@@ -22,53 +28,92 @@ export const TrafficCard = () => {
   const [summary24, setSummary24] = useState("");
   const [loading24, setLoading24] = useState(true);
 
-  const fetchSummary = async (h: number, setter: (s: string) => void, setLoading: (b: boolean) => void) => {
+  const fetchSummary = async (
+    h: number,
+    cam: string,
+    setSummary: (s: string) => void,
+    setLoading: (b: boolean) => void,
+    setError?: (e: string | null) => void
+  ) => {
     setLoading(true);
+    setError?.(null);
+
     try {
-      const res = await axios.get("/api/traffic-summary", { params: { hours: h } });
-      setter(res.data.summary);
-    } catch {
-      setter("Failed to load summary.");
+      const res = await axios.get("/api/traffic-summary", {
+        params: {
+          hours: h,
+          ...(camera !== "all" ? { camera_id: camera } : {}),
+        },
+      });
+      setSummary(res.data.summary);
+    } catch (e: any) {
+      setSummary("Failed to load summary.");
+      setError?.(e.response?.data?.error || e.message);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSummary(hours, setLiveSummary, setLoadingLive);
-  }, [hours]);
+    fetchSummary(
+      hours,
+      camera,
+      setLiveSummary,
+      setLoadingLive,
+      setErrorLive
+    );
+  }, [hours, camera]);
 
   useEffect(() => {
-    fetchSummary(24, setSummary24, setLoading24);
+    fetchSummary(24, undefined, setSummary24, setLoading24);
   }, []);
 
   return (
     <DashboardCard title="Live Traffic Feed" icon={<Navigation className="w-5 h-5" />}>
       <div className="flex items-center gap-2 mb-4">
-        <Select value={hours.toString()} onValueChange={val => setHours(Number(val))}>
+        <Select value={hours.toString()} onValueChange={(v) => setHours(Number(v))}>
           <SelectTrigger className="w-24">
             <SelectValue placeholder="Hours" />
           </SelectTrigger>
           <SelectContent>
-            {hoursOptions.map(h => (
+            {hoursOptions.map((h) => (
               <SelectItem key={h} value={h.toString()}>
                 Last {h}h
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Button size="sm" onClick={() => fetchSummary(hours, setLiveSummary, setLoadingLive)} disabled={loadingLive}>
-          {loadingLive ? "Refreshing…" : "Refresh"}
+
+        <Select
+          value={camera}
+          onValueChange={(val) => setCamera(val)}
+        >
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="All Cameras" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Cameras</SelectItem>
+            {cameraFeeds.map((feed) => (
+              <SelectItem key={feed.id} value={feed.id}>
+                {feed.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button size="sm" onClick={() => fetchSummary(hours, camera, setLiveSummary, setLoadingLive, setErrorLive)} disabled={loadingLive}>
+          {loadingLive ? "Loading…" : "Refresh"}
         </Button>
       </div>
 
+      {errorLive && <div className="text-destructive text-sm mb-2">{errorLive}</div>}
       <div className="bg-muted/50 rounded-lg p-4 mb-8">
         <div className="flex items-center mb-2">
           <Brain className="w-4 h-4 text-primary mr-1" />
           <span className="text-sm font-medium">AI Traffic Summary</span>
         </div>
         <p className="text-sm leading-relaxed">
-          {loadingLive ? "Loading…" : liveSummary || "No data available."}
+          {loadingLive ? "Loading…" : liveSummary || "No data available for that selection."}
         </p>
       </div>
 
