@@ -1,117 +1,83 @@
 import { Navigation, Brain } from "lucide-react";
 import { DashboardCard } from "./DashboardCard";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
-const cameraFeeds = [
-  { id: "i495-inner", name: "I-495 Inner Loop at Tysons" },
-  { id: "i66-eastbound", name: "I-66 Eastbound at Fairfax" },
-  { id: "i270-south", name: "I-270 Southbound at Rockville" },
-  { id: "gwb-south", name: "GW Parkway Southbound at Key Bridge" },
-  { id: "395-north", name: "I-395 Northbound at Pentagon" }
-];
+const hoursOptions = [1, 3, 6, 12];
 
 export const TrafficCard = () => {
-  const [selectedCamera, setSelectedCamera] = useState(cameraFeeds[0].id);
+  const [hours, setHours] = useState(1);
+  const [liveSummary, setLiveSummary] = useState("");
+  const [loadingLive, setLoadingLive] = useState(false);
+  const [errorLive, setErrorLive] = useState<string | null>(null);
+
+  const [summary24, setSummary24] = useState("");
+  const [loading24, setLoading24] = useState(true);
+
+  const fetchSummary = async (h: number, setter: (s: string) => void, setLoading: (b: boolean) => void) => {
+    setLoading(true);
+    try {
+      const res = await axios.get("/api/traffic-summary", { params: { hours: h } });
+      setter(res.data.summary);
+    } catch {
+      setter("Failed to load summary.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSummary(hours, setLiveSummary, setLoadingLive);
+  }, [hours]);
+
+  useEffect(() => {
+    fetchSummary(24, setSummary24, setLoading24);
+  }, []);
 
   return (
-    <DashboardCard
-      title="Live Traffic Feed"
-      icon={<Navigation className="w-5 h-5" />}
-    >
-      <div className="space-y-3">
-        {/* Camera Feed Selector */}
-        <Select value={selectedCamera} onValueChange={setSelectedCamera}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select camera feed" />
+    <DashboardCard title="Live Traffic Feed" icon={<Navigation className="w-5 h-5" />}>
+      <div className="flex items-center gap-2 mb-4">
+        <Select value={hours.toString()} onValueChange={val => setHours(Number(val))}>
+          <SelectTrigger className="w-24">
+            <SelectValue placeholder="Hours" />
           </SelectTrigger>
           <SelectContent>
-            {cameraFeeds.map((feed) => (
-              <SelectItem key={feed.id} value={feed.id}>
-                {feed.name}
+            {hoursOptions.map(h => (
+              <SelectItem key={h} value={h.toString()}>
+                Last {h}h
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <Button size="sm" onClick={() => fetchSummary(hours, setLiveSummary, setLoadingLive)} disabled={loadingLive}>
+          {loadingLive ? "Refreshing…" : "Refresh"}
+        </Button>
+      </div>
 
-        {/* Traffic Feed Display */}
-        <div className="w-full h-48 bg-success/10 rounded-lg border border-success/20 relative overflow-hidden">
-          {/* Simple traffic visualization */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <svg className="w-full h-full" viewBox="0 0 200 150">
-              {/* Traffic lines */}
-              <path d="M20 30 Q100 75 180 30" stroke="hsl(var(--success))" strokeWidth="3" fill="none" opacity="0.8" />
-              <path d="M20 60 Q100 105 180 60" stroke="hsl(var(--warning))" strokeWidth="3" fill="none" opacity="0.8" />
-              <path d="M20 90 Q100 45 180 90" stroke="hsl(var(--destructive))" strokeWidth="3" fill="none" opacity="0.8" />
-              <path d="M20 120 Q100 15 180 120" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" opacity="0.8" />
-            </svg>
-          </div>
+      <div className="bg-muted/50 rounded-lg p-4 mb-8">
+        <div className="flex items-center mb-2">
+          <Brain className="w-4 h-4 text-primary mr-1" />
+          <span className="text-sm font-medium">AI Traffic Summary</span>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {cameraFeeds.find(feed => feed.id === selectedCamera)?.name}
-        </div>
+        <p className="text-sm leading-relaxed">
+          {loadingLive ? "Loading…" : liveSummary || "No data available."}
+        </p>
+      </div>
 
-        {/* AI Traffic Summary Section */}
-        <div className="pt-4 border-t border-border">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Brain className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-card-foreground">AI Traffic Summary</span>
-            </div>
-            <Button variant="outline" size="sm">
-              Refresh
-            </Button>
-          </div>
-          <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-card-foreground leading-relaxed">
-              Current traffic conditions show moderate congestion on I-495 Inner Loop with 15-minute delays. 
-              I-66 Eastbound is experiencing heavy traffic due to ongoing construction. Alternative routes via 
-              I-270 are recommended for faster travel times. Expected clear-up by 7:30 PM.
-            </p>
-            <div className="mt-3 flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-success"></div>
-                <span className="text-xs text-muted-foreground">Light Traffic</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-warning"></div>
-                <span className="text-xs text-muted-foreground">Moderate Traffic</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-destructive"></div>
-                <span className="text-xs text-muted-foreground">Heavy Traffic</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 24 Hour Traffic Summary */}
-        <div className="pt-4 border-t border-border">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-card-foreground">Last 24 Hours</span>
-          </div>
-          <div className="bg-muted/30 rounded-lg p-4">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-lg font-semibold text-card-foreground">12</div>
-                <div className="text-xs text-muted-foreground">Peak Hours</div>
-              </div>
-              <div>
-                <div className="text-lg font-semibold text-card-foreground">35min</div>
-                <div className="text-xs text-muted-foreground">Avg Delay</div>
-              </div>
-              <div>
-                <div className="text-lg font-semibold text-card-foreground">8</div>
-                <div className="text-xs text-muted-foreground">Incidents</div>
-              </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-border">
-              <p className="text-xs text-muted-foreground">
-                Heaviest traffic between 7-9 AM and 5-7 PM. Construction on I-66 caused 20min delays.
-              </p>
-            </div>
-          </div>
+      <div>
+        <h3 className="text-sm font-medium mb-2">Last 24 Hours</h3>
+        <div className="bg-muted/30 rounded-lg p-4">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {loading24 ? "Loading…" : summary24}
+          </p>
         </div>
       </div>
     </DashboardCard>

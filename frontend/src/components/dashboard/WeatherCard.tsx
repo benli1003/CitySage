@@ -64,19 +64,16 @@ export const WeatherCard = () => {
     </div>
   );
 
-  // pull out today’s high/low
   const today = weather.forecast.forecastday[0].day;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
       <h2 className="text-xl font-bold text-gray-700 mb-2">Weather</h2>
 
-      {/* Location */}
       <p className="text-gray-800">
         {weather.location.name}, {weather.location.region}
       </p>
 
-      {/* Condition */}
       <div className="flex items-center my-2">
         <img
           src={`https:${weather.current.condition.icon}`}
@@ -86,7 +83,6 @@ export const WeatherCard = () => {
         <p className="text-gray-600">{weather.current.condition.text}</p>
       </div>
 
-      {/* Temp & Wind */}
       <div className="flex items-baseline space-x-4">
         <p className="text-3xl font-bold text-gray-900">
           {Math.round(weather.current.temp_f)}°F
@@ -96,7 +92,6 @@ export const WeatherCard = () => {
         </p>
       </div>
 
-      {/* High / Low */}
       <div className="mt-2 flex space-x-4 text-sm text-gray-600">
         <p>High: {Math.round(today.maxtemp_f)}°</p>
         <p>Low: {Math.round(today.mintemp_f)}°</p>
