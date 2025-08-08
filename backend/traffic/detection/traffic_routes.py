@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 from datetime import datetime, timedelta
 from .database_summary import get_counts, generate_summary
+import json
+import os
 
 traffic = Blueprint("traffic", __name__)
 
@@ -45,4 +47,17 @@ def traffic_summary():
             "camera": camera_id
         }
     })
+
+# camera configurations endpoint
+@traffic.route("/cameras", methods=["GET"])
+def get_cameras():
+    try:
+        config_path = os.path.join(os.path.dirname(__file__), "..", "config", "camera_configs.json")
+        with open(config_path, "r") as f:
+            cameras = json.load(f)
+        return jsonify({"cameras": cameras})
+    except FileNotFoundError:
+        return jsonify({"error": "Camera configuration not found"}), 404
+    except json.JSONDecodeError:
+        return jsonify({"error": "Invalid camera configuration"}), 500
     

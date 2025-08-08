@@ -1,5 +1,6 @@
 import { Navigation, Brain } from "lucide-react";
 import { DashboardCard } from "./DashboardCard";
+import { TrafficFootageCard } from "./TrafficFootageCard";
 import {
   Select,
   SelectContent,
@@ -46,9 +47,10 @@ export const TrafficCard = () => {
         },
       });
       setSummary(res.data.summary);
-    } catch (e: any) {
+    } catch (e: unknown) {
       setSummary("Failed to load summary.");
-      setError?.(e.response?.data?.error || e.message);
+      const error = e as { response?: { data?: { error?: string } }; message?: string };
+      setError?.(error.response?.data?.error || error.message || "Unknown error");
     } finally {
       setLoading(false);
     }
@@ -104,6 +106,10 @@ export const TrafficCard = () => {
         <Button size="sm" onClick={() => fetchSummary(hours, camera, setLiveSummary, setLoadingLive, setErrorLive)} disabled={loadingLive}>
           {loadingLive ? "Loading…" : "Refresh"}
         </Button>
+      </div>
+
+      <div className="mb-6">
+        <TrafficFootageCard />
       </div>
 
       {errorLive && <div className="text-destructive text-sm mb-2">{errorLive}</div>}

@@ -1,11 +1,15 @@
 [
     {
       "id": "i95-north-of-i495",
-      "stream_url": "https://strmr5.sha.maryland.gov/rtplive/ed015b5800f700d700437a45351f0214/chunklist_w1903222564.m3u8"
+      "name": "I-95 Northbound just north of I-495",
+      "logging_url": "https://strmr5.sha.maryland.gov/rtplive/ed015b5800f700d700437a45351f0214/chunklist_w1903222564.m3u8",
+      "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/ed015b5800f700d700437a45351f0214/playlist.m3u8"
     },
     {
       "id": "i495-east-of-i270",
-      "stream_url": "https://strmr5.sha.maryland.gov/rtplive/b3011c5701440048005dd336c4235c0a/chunklist_w1587439289.m3u8"
+      "name": "I-495 Eastbound just east of I-270",
+      "logging_url": "https://strmr5.sha.maryland.gov/rtplive/b3011c5701440048005dd336c4235c0a/chunklist_w1587439289.m3u8",
+      "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/b3011c5701440048005dd336c4235c0a/playlist.m3u8"
     }
   ]
   

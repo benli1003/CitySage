@@ -18,12 +18,12 @@ def launch_all_cameras():
     threads = [] #store running threads
     for cam in cameras:
         cam_id = cam.get("id")
-        stream_url = cam.get("stream_url")
+        logging_url = cam.get("logging_url")
         
         # set up thread for each camera, start it, and add to list
         t = threading.Thread(
             target = start_camera_worker,
-            args = (cam_id, stream_url),
+            args = (cam_id, logging_url),
             daemon = True
         )
         t.start()

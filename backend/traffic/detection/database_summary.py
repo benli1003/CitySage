@@ -56,7 +56,7 @@ def build_summary_prompt(stats, start: datetime, end: datetime) -> str:
         lines.append(f"• {cam_id}: {total} total crossings, avg {avg:.1f}/min")
     lines.append(
         "\nPlease provide a concise paragraph highlighting the busiest cameras "
-        "and any overall trends you observe."
+        "and any overall trends you observe. Do not use emojis."
     )
     return "\n".join(lines)
 
