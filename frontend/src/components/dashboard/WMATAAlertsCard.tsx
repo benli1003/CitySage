@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Train, Bus } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
+import { Train, Bus, Filter } from "lucide-react";
 import { DashboardCard } from "./DashboardCard";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import axios from "axios";
 
 interface WMATAAlert {
@@ -26,6 +34,9 @@ const getSeverityColor = (severity: string | undefined) => {
 export const WMATAAlertsCard: React.FC = () => {
   const [alerts, setAlerts] = useState<WMATAAlert[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -54,14 +65,107 @@ export const WMATAAlertsCard: React.FC = () => {
     fetchAlerts();
   }, []);
 
+  const filteredAlerts = useMemo(() => {
+    return alerts.filter((alert) => {
+      // Severity filter
+      if (severityFilter !== "all" && alert.severity !== severityFilter) {
+        return false;
+      }
+
+      // Date filter
+      if (dateFilter !== "all") {
+        const alertDate = new Date(alert.time);
+        const now = new Date();
+        
+        switch (dateFilter) {
+          case "today":
+            return alertDate.toDateString() === now.toDateString();
+          case "week": {
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            return alertDate >= weekAgo;
+          }
+          case "month": {
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            return alertDate >= monthAgo;
+          }
+          default:
+            return true;
+        }
+      }
+
+      return true;
+    });
+  }, [alerts, severityFilter, dateFilter]);
+
+  const resetFilters = () => {
+    setSeverityFilter("all");
+    setDateFilter("all");
+  };
+
+  const hasActiveFilters = severityFilter !== "all" || dateFilter !== "all";
+
   return (
     <DashboardCard title="WMATA Alerts" icon={<Train className="w-5 h-5" />}>
       <div className="space-y-3">
+        {/* Filter Controls */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2"
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+            {hasActiveFilters && (
+              <span className="ml-1 px-1 py-0.5 text-xs bg-primary text-primary-foreground rounded">
+                {[severityFilter !== "all" ? 1 : 0, dateFilter !== "all" ? 1 : 0].reduce((a, b) => a + b, 0)}
+              </span>
+            )}
+          </Button>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={resetFilters}>
+              Clear
+            </Button>
+          )}
+        </div>
+
+        {showFilters && (
+          <div className="flex flex-col sm:flex-row gap-2 p-3 bg-muted/30 rounded-lg">
+            <Select value={severityFilter} onValueChange={setSeverityFilter}>
+              <SelectTrigger className="w-full sm:w-32">
+                <SelectValue placeholder="Severity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Severity</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+                <SelectItem value="major">Major</SelectItem>
+                <SelectItem value="minor">Minor</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-full sm:w-32">
+                <SelectValue placeholder="Date" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">Past Week</SelectItem>
+                <SelectItem value="month">Past Month</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         {error && <p className="text-destructive">{error}</p>}
+        {!error && filteredAlerts.length === 0 && alerts.length > 0 && (
+          <p className="text-sm text-muted-foreground">No alerts match the current filters</p>
+        )}
         {!error && alerts.length === 0 && (
           <p className="text-sm text-muted-foreground">No current alerts</p>
         )}
-        {alerts.map((alert) => (
+        {filteredAlerts.map((alert) => (
           <div
             key={`${alert.type}-${alert.id}`}
             className={`flex items-start gap-3 p-3 rounded-lg border ${getSeverityColor(
