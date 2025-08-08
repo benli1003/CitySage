@@ -2,9 +2,7 @@ import os
 import psycopg2
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from azure.ai.inference import ChatCompletionsClient
-from azure.ai.inference.models import SystemMessage, UserMessage
-from azure.core.credentials import AzureKeyCredential
+from openai import OpenAI
 
 load_dotenv()
 
@@ -14,15 +12,19 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-# open ai client
-OPENAI_ENDPOINT = os.getenv("OPENAI_ENDPOINT")
-OPENAI_KEY = os.getenv("OPENAI_KEY")
-MODEL = "openai/gpt-4.1"
+# GitHub Models configuration
+GITHUB_ENDPOINT = os.getenv("OPENAI_ENDPOINT")
+GITHUB_TOKEN = os.getenv("OPENAI_KEY")
+MODEL = "gpt-4o"
 
-client = ChatCompletionsClient(
-    endpoint = OPENAI_ENDPOINT,
-    credential = AzureKeyCredential(OPENAI_KEY),
-)
+try:
+    client = OpenAI(
+        base_url = GITHUB_ENDPOINT,
+        api_key = GITHUB_TOKEN
+    )
+except Exception as e:
+    print(f"Warning: OpenAI client initialization failed: {e}")
+    client = None
 
 # query vehicle_counts from a specified interval
 def get_counts(start: datetime, end: datetime):
@@ -60,6 +62,9 @@ def build_summary_prompt(stats, start: datetime, end: datetime) -> str:
 
 # generates a summary
 def generate_summary(stats, start: datetime, end: datetime) -> str:
+    if client is None:
+        return generate_fallback_summary(stats, start, end)
+    
     system_prompt = (
         "You are CitySage, a friendly traffic-monitoring assistant.  "
         "Your job is to explain vehicle-count data in simple, everyday language—"
@@ -77,16 +82,42 @@ def generate_summary(stats, start: datetime, end: datetime) -> str:
     Make it sound like you're giving a quick update to a city manager.
     """
     
-    response = client.complete(
-        model = MODEL,
-        messages = [
-            SystemMessage(content = system_prompt),
-            UserMessage(content = user_prompt),
-        ],
-        temperature = 0.7,
-        top_p =0.9,
-    )
-    return response.choices[0].message.content.strip()
+    try:
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.7,
+            top_p=0.9,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"AI service error: {e}")
+        return generate_fallback_summary(stats, start, end)
+
+def generate_fallback_summary(stats, start: datetime, end: datetime) -> str:
+    if not stats:
+        return "No traffic activity detected during this period."
+    
+    total_events = sum(events for _, events, _ in stats)
+    busiest_camera = stats[0][0] if stats else "Unknown"
+    busiest_count = stats[0][1] if stats else 0
+    
+    period_desc = f"{start:%H:%M} to {end:%H:%M}"
+    if start.date() != end.date():
+        period_desc = f"{start:%m/%d %H:%M} to {end:%m/%d %H:%M}"
+    
+    summary = f"Traffic summary for {period_desc}: {total_events} total vehicle crossings detected. "
+    
+    if len(stats) > 1:
+        summary += f"Busiest location was {busiest_camera} with {busiest_count} crossings. "
+        summary += f"Activity recorded at {len(stats)} camera locations."
+    else:
+        summary += f"All activity at {busiest_camera}."
+    
+    return summary
 
 if __name__ == "__main__":
     end   = datetime.now()
