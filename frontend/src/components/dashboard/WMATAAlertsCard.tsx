@@ -15,11 +15,11 @@ interface WMATAAlert {
 const getSeverityColor = (severity: string | undefined) => {
   switch (severity) {
     case "critical":
-      return "bg-red-100 border-red-200 text-red-800";
+      return "bg-destructive/10 border-destructive/20 text-destructive dark:bg-destructive/20 dark:border-destructive/30 dark:text-destructive-foreground";
     case "major":
-      return "bg-yellow-100 border-yellow-200 text-yellow-800";
+      return "bg-warning/10 border-warning/20 text-warning dark:bg-warning/20 dark:border-warning/30 dark:text-warning-foreground";
     default:
-      return "bg-gray-100 border-gray-200 text-gray-800";
+      return "bg-muted/50 border-border text-muted-foreground dark:bg-muted/30 dark:border-muted dark:text-muted-foreground";
   }
 };
 
@@ -57,7 +57,7 @@ export const WMATAAlertsCard: React.FC = () => {
   return (
     <DashboardCard title="WMATA Alerts" icon={<Train className="w-5 h-5" />}>
       <div className="space-y-3">
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-destructive">{error}</p>}
         {!error && alerts.length === 0 && (
           <p className="text-sm text-muted-foreground">No current alerts</p>
         )}

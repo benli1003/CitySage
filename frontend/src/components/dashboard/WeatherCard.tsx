@@ -52,25 +52,25 @@ export const WeatherCard = () => {
   }, []);
 
   if (error) return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-xl font-bold text-gray-700 mb-2">Weather</h2>
-      <p className="text-red-600">{error}</p>
+    <div className="bg-card rounded-lg border border-border p-4">
+      <h2 className="text-xl font-bold text-card-foreground mb-2">Weather</h2>
+      <p className="text-destructive">{error}</p>
     </div>
   );
   if (!weather) return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-xl font-bold text-gray-700 mb-2">Weather</h2>
-      <p>Loading weather...</p>
+    <div className="bg-card rounded-lg border border-border p-4">
+      <h2 className="text-xl font-bold text-card-foreground mb-2">Weather</h2>
+      <p className="text-muted-foreground">Loading weather...</p>
     </div>
   );
 
   const today = weather.forecast.forecastday[0].day;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-xl font-bold text-gray-700 mb-2">Weather</h2>
+    <div className="bg-card rounded-lg border border-border p-4">
+      <h2 className="text-xl font-bold text-card-foreground mb-2">Weather</h2>
 
-      <p className="text-gray-800">
+      <p className="text-card-foreground">
         {weather.location.name}, {weather.location.region}
       </p>
 
@@ -80,19 +80,19 @@ export const WeatherCard = () => {
           alt={weather.current.condition.text}
           className="w-6 h-6 mr-2"
         />
-        <p className="text-gray-600">{weather.current.condition.text}</p>
+        <p className="text-muted-foreground">{weather.current.condition.text}</p>
       </div>
 
       <div className="flex items-baseline space-x-4">
-        <p className="text-3xl font-bold text-gray-900">
+        <p className="text-3xl font-bold text-card-foreground">
           {Math.round(weather.current.temp_f)}°F
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Wind: {weather.current.wind_mph} mph
         </p>
       </div>
 
-      <div className="mt-2 flex space-x-4 text-sm text-gray-600">
+      <div className="mt-2 flex space-x-4 text-sm text-muted-foreground">
         <p>High: {Math.round(today.maxtemp_f)}°</p>
         <p>Low: {Math.round(today.mintemp_f)}°</p>
       </div>
