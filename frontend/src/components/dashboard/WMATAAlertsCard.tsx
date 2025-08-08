@@ -35,7 +35,7 @@ export const WMATAAlertsCard: React.FC = () => {
   const [alerts, setAlerts] = useState<WMATAAlert[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [severityFilter, setSeverityFilter] = useState<string>("all");
-  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("today");
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export const WMATAAlertsCard: React.FC = () => {
   }, []);
 
   const filteredAlerts = useMemo(() => {
-    return alerts.filter((alert) => {
+    const filtered = alerts.filter((alert) => {
       // Severity filter
       if (severityFilter !== "all" && alert.severity !== severityFilter) {
         return false;
@@ -95,14 +95,21 @@ export const WMATAAlertsCard: React.FC = () => {
 
       return true;
     });
+
+    // Sort by most recent first
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.time);
+      const dateB = new Date(b.time);
+      return dateB.getTime() - dateA.getTime();
+    });
   }, [alerts, severityFilter, dateFilter]);
 
   const resetFilters = () => {
     setSeverityFilter("all");
-    setDateFilter("all");
+    setDateFilter("today");
   };
 
-  const hasActiveFilters = severityFilter !== "all" || dateFilter !== "all";
+  const hasActiveFilters = severityFilter !== "all" || dateFilter !== "today";
 
   return (
     <DashboardCard title="WMATA Alerts" icon={<Train className="w-5 h-5" />}>
