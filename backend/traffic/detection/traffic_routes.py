@@ -45,6 +45,10 @@ def traffic_summary():
             "end": end.isoformat(),
             "hours": hours,
             "camera": camera_id
+        },
+        "debug": {
+            "raw_data_count": len(raw),
+            "total_events": sum(r[1] for r in raw) if raw else 0
         }
     })
 
@@ -60,4 +64,13 @@ def get_cameras():
         return jsonify({"error": "Camera configuration not found"}), 404
     except json.JSONDecodeError:
         return jsonify({"error": "Invalid camera configuration"}), 500
+
+# api status
+@traffic.route("/api-status", methods=["GET"])
+def get_api_status():
+    from .database_summary import client
+    if client is None:
+        return jsonify({"status": "No OpenAI client configured"}), 500
+    
+    return jsonify({"status": "OpenAI client ready"})
     

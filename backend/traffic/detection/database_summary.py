@@ -12,16 +12,19 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-# GitHub Models configuration
-GITHUB_ENDPOINT = os.getenv("OPENAI_ENDPOINT")
-GITHUB_TOKEN = os.getenv("OPENAI_KEY")
-MODEL = "gpt-4o"
+# OpenAI API configuration
+OPENAI_ENDPOINT = os.getenv("OPENAI_ENDPOINT", "https://api.openai.com/v1")
+OPENAI_API_KEY = os.getenv("OPENAI_KEY")
+MODEL = "gpt-4.1-nano"
 
+# Initialize OpenAI client
 try:
     client = OpenAI(
-        base_url = GITHUB_ENDPOINT,
-        api_key = GITHUB_TOKEN
-    )
+        base_url=OPENAI_ENDPOINT,
+        api_key=OPENAI_API_KEY
+    ) if OPENAI_API_KEY else None
+    if client:
+        print("OpenAI client initialized successfully")
 except Exception as e:
     print(f"Warning: OpenAI client initialization failed: {e}")
     client = None
@@ -94,7 +97,8 @@ def generate_summary(stats, start: datetime, end: datetime) -> str:
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"AI service error: {e}")
+        print(f"OpenAI API error: {e}")
+        
         return generate_fallback_summary(stats, start, end)
 
 def generate_fallback_summary(stats, start: datetime, end: datetime) -> str:

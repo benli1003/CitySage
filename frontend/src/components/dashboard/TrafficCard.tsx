@@ -43,7 +43,7 @@ export const TrafficCard = () => {
       const res = await axios.get("/api/traffic-summary", {
         params: {
           hours: h,
-          ...(camera !== "all" ? { camera_id: camera } : {}),
+          ...(cam && cam !== "all" ? { camera_id: cam } : {}),
         },
       });
       setSummary(res.data.summary);
@@ -67,7 +67,7 @@ export const TrafficCard = () => {
   }, [hours, camera]);
 
   useEffect(() => {
-    fetchSummary(24, undefined, setSummary24, setLoading24);
+    fetchSummary(24, "all", setSummary24, setLoading24);
   }, []);
 
   return (
