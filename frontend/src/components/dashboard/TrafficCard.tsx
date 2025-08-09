@@ -14,7 +14,16 @@ import axios from "axios";
 
 const cameraFeeds = [
   { id: "i95-north-of-i495", name: "I-95 Northbound just north of I-495" },
-  { id: "i495-east-of-i270", name: "I-495 Eastbound just east of I-270" }
+  { id: "i495-east-of-i270", name: "I-495 Eastbound just east of I-270" },
+  { id: "i495-american-legion-bridge", name: "I-495 American Legion Bridge" },
+  { id: "i495-connecticut-ave", name: "I-495 at Connecticut Avenue" },
+  { id: "i495-georgia-ave", name: "I-495 at Georgia Avenue" },
+  { id: "i495-new-hampshire-ave", name: "I-495 at New Hampshire Avenue" },
+  { id: "i495-colesville-rd", name: "I-495 at Colesville Road" },
+  { id: "i495-university-blvd", name: "I-495 at University Boulevard" },
+  { id: "i270-rockville-pike", name: "I-270 at Rockville Pike" },
+  { id: "i270-montrose-rd", name: "I-270 at Montrose Road" },
+  { id: "i270-old-georgetown-rd", name: "I-270 at Old Georgetown Road" }
 ];
 
 const hoursOptions = [1, 3, 6, 12];

@@ -10,6 +10,60 @@
       "name": "I-495 Eastbound just east of I-270",
       "logging_url": "https://strmr5.sha.maryland.gov/rtplive/b3011c5701440048005dd336c4235c0a/chunklist_w1587439289.m3u8",
       "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/b3011c5701440048005dd336c4235c0a/playlist.m3u8"
+    },
+    {
+      "id": "i495-american-legion-bridge",
+      "name": "I-495 American Legion Bridge",
+      "logging_url": "https://strmr5.sha.maryland.gov/rtplive/680130ec01500048005dd336c4235c0a/chunklist_w1701090224.m3u8",
+      "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/680130ec01500048005dd336c4235c0a/playlist.m3u8"
+    },
+    {
+      "id": "i495-connecticut-ave",
+      "name": "I-495 at Connecticut Avenue",
+      "logging_url": "https://strmr5.sha.maryland.gov/rtplive/ac00a13000040075004d823633235daa/chunklist_w190294344.m3u8",
+      "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/ac00a13000040075004d823633235daa/playlist.m3u8"
+    },
+    {
+      "id": "i270-rockville-pike",
+      "name": "I-270 at Rockville Pike",
+      "logging_url": "https://strmr3.sha.maryland.gov/rtplive/8b010ae2017f00490059fa36c4235c0a/chunklist_w190748051.m3u8",
+      "streaming_url": "https://strmr3.sha.maryland.gov/rtplive/8b010ae2017f00490059fa36c4235c0a/playlist.m3u8"
+    },
+    {
+      "id": "i270-montrose-rd",
+      "name": "I-270 at Montrose Road",
+      "logging_url": "https://strmr3.sha.maryland.gov/rtplive/7e0106cf00240070004602366d235daa/chunklist_w504172751.m3u8",
+      "streaming_url": "https://strmr3.sha.maryland.gov/rtplive/7e0106cf00240070004602366d235daa/playlist.m3u8"
+    },
+    {
+      "id": "i495-georgia-ave",
+      "name": "I-495 at Georgia Avenue",
+      "logging_url": "https://strmr5.sha.maryland.gov/rtplive/6a01d75801f700d700437a45351f0214/chunklist_w619821817.m3u8",
+      "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/6a01d75801f700d700437a45351f0214/playlist.m3u8"
+    },
+    {
+      "id": "i270-old-georgetown-rd",
+      "name": "I-270 at Old Georgetown Road",
+      "logging_url": "https://strmr3.sha.maryland.gov/rtplive/63016dde026300e50051fa36c4235c0a/chunklist_w197547467.m3u8",
+      "streaming_url": "https://strmr3.sha.maryland.gov/rtplive/63016dde026300e50051fa36c4235c0a/playlist.m3u8"
+    },
+    {
+      "id": "i495-new-hampshire-ave",
+      "name": "I-495 at New Hampshire Avenue",
+      "logging_url": "https://strmr5.sha.maryland.gov/rtplive/1f018d5800f700d700437a45351f0214/chunklist_w1979851758.m3u8",
+      "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/1f018d5800f700d700437a45351f0214/playlist.m3u8"
+    },
+    {
+      "id": "i495-colesville-rd",
+      "name": "I-495 at Colesville Road",
+      "logging_url": "https://strmr5.sha.maryland.gov/rtplive/13015dbd01210075004d823633235daa/chunklist_w567303060.m3u8",
+      "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/13015dbd01210075004d823633235daa/playlist.m3u8"
+    },
+    {
+      "id": "i495-university-blvd",
+      "name": "I-495 at University Boulevard",
+      "logging_url": "https://strmr5.sha.maryland.gov/rtplive/6001cd5801f700d700437a45351f0214/chunklist_w1461730007.m3u8",
+      "streaming_url": "https://strmr5.sha.maryland.gov/rtplive/6001cd5801f700d700437a45351f0214/playlist.m3u8"
     }
-  ]
+]
   
