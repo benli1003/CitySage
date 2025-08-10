@@ -11,8 +11,8 @@ export const LandingPage = ({ onAnimationComplete }: LandingPageProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLanding(false);
-      setTimeout(onAnimationComplete, 1000); // Wait for exit animation
-    }, 2500); // Show landing for 2.5 seconds
+      setTimeout(onAnimationComplete, 1000);
+    }, 2500);
 
     return () => clearTimeout(timer);
   }, [onAnimationComplete]);
@@ -89,7 +89,6 @@ export const LandingPage = ({ onAnimationComplete }: LandingPageProps) => {
             </motion.div>
           </div>
 
-          {/* Subtle background pattern */}
           <div className="absolute inset-0 opacity-[0.02]">
             <div className="absolute top-10 left-10 w-32 h-32 bg-primary rounded-full blur-3xl" />
             <div className="absolute bottom-10 right-10 w-48 h-48 bg-primary/50 rounded-full blur-3xl" />

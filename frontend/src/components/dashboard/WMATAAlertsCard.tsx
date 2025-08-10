@@ -67,12 +67,10 @@ export const WMATAAlertsCard: React.FC = () => {
 
   const filteredAlerts = useMemo(() => {
     const filtered = alerts.filter((alert) => {
-      // Severity filter
       if (severityFilter !== "all" && alert.severity !== severityFilter) {
         return false;
       }
 
-      // Date filter
       if (dateFilter !== "all") {
         const alertDate = new Date(alert.time);
         const now = new Date();
@@ -96,7 +94,6 @@ export const WMATAAlertsCard: React.FC = () => {
       return true;
     });
 
-    // Sort by most recent first
     return filtered.sort((a, b) => {
       const dateA = new Date(a.time);
       const dateB = new Date(b.time);
@@ -114,7 +111,6 @@ export const WMATAAlertsCard: React.FC = () => {
   return (
     <DashboardCard title="WMATA Alerts" icon={<Train className="w-5 h-5" />}>
       <div className="space-y-3">
-        {/* Filter Controls */}
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
