@@ -1,9 +1,9 @@
 import json
 import threading
 import os
+import time
 from .worker import start_camera_worker
 
-# path to camera configs
 CONFIG_PATH = os.path.join(
     os.path.dirname(__file__),
     os.pardir,
@@ -15,12 +15,15 @@ def launch_all_cameras():
     with open(CONFIG_PATH, "r") as file:
         cameras = json.load(file)
         
-    threads = [] #store running threads
-    for cam in cameras:
+    print(f"Starting traffic detection for {len(cameras)} cameras...")
+    
+    threads = []
+    for i, cam in enumerate(cameras):
         cam_id = cam.get("id")
         logging_url = cam.get("logging_url")
         
-        # set up thread for each camera, start it, and add to list
+        print(f"Initializing camera {i+1}/{len(cameras)}: {cam_id}")
+        
         t = threading.Thread(
             target = start_camera_worker,
             args = (cam_id, logging_url),
@@ -28,8 +31,12 @@ def launch_all_cameras():
         )
         t.start()
         threads.append(t)
-
-    # continously run threads
+        
+        if i < len(cameras) - 1:
+            time.sleep(5)
+    
+    print("All cameras initialized. Traffic detection active.")
+    
     for t in threads:
         t.join()
 

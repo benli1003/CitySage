@@ -4,6 +4,7 @@ import { TrafficCard } from "./TrafficCard";
 import { WMATAAlertsCard } from "./WMATAAlertsCard";
 import { AISummaryCard } from "./AISummaryCard";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SocialLinks } from "@/components/SocialLinks";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -51,7 +52,9 @@ export const Dashboard = () => {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.6 }}
+            className="flex items-center gap-3"
           >
+            <SocialLinks />
             <ThemeToggle />
           </motion.div>
         </div>

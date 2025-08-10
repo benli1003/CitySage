@@ -33,6 +33,8 @@ def start_camera_worker(camera_id: str, stream_url: str):
     crossed_ids[camera_id] = set()
     active_counts[camera_id] = 0
     last_log_time[camera_id] = datetime.now()
+    
+    print(f"[{camera_id}] Starting camera worker...")
 
     def on_prediction(data: dict, frame: VideoFrame):
         now = datetime.now()
@@ -53,9 +55,7 @@ def start_camera_worker(camera_id: str, stream_url: str):
             if y > LINE_POSITION and id_ not in crossed_ids[camera_id]:
                 crossed_ids[camera_id].add(id_)
                 active_counts[camera_id] += 1
-                print(f"[{now.isoformat()}] [{camera_id}] crossed line (count={active_counts[camera_id]})")
-
-            print(f"[{camera_id}] Detected at ({x:.1f},{y:.1f})")
+                print(f"[{now.isoformat()}] [{camera_id}] Vehicle crossed line (count={active_counts[camera_id]})")
 
         # draw line and boxes
         cv2.line(img, (0, LINE_POSITION), (img.shape[1], LINE_POSITION), LINE_COLOR, LINE_THICKNESS)
@@ -77,12 +77,19 @@ def start_camera_worker(camera_id: str, stream_url: str):
             active_counts[camera_id] = 0
             last_log_time[camera_id] = now
 
-    pipeline = InferencePipeline.init(
-        model_id = "vehicle_detection_yolov8-rptry/4",
-        api_key = API_KEY,
-        video_reference = stream_url,
-        on_prediction = on_prediction,
-        confidence = 0.3,
-        max_fps = 10,
-    )
-    pipeline.start()
+    try:
+        print(f"[{camera_id}] Initializing inference pipeline...")
+        pipeline = InferencePipeline.init(
+            model_id = "vehicle_detection_yolov8-rptry/4",
+            api_key = API_KEY,
+            video_reference = stream_url,
+            on_prediction = on_prediction,
+            confidence = 0.3,
+            max_fps = 10,
+        )
+        print(f"[{camera_id}] Pipeline initialized successfully")
+        pipeline.start()
+        print(f"[{camera_id}] Camera detection started")
+    except Exception as e:
+        print(f"[{camera_id}] Failed to start: {str(e)}")
+        print(f"[{camera_id}] Camera will be skipped")

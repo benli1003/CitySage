@@ -27,7 +27,6 @@ export const TrafficFootageCard = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
 
-  // Fetch camera configurations from backend
   useEffect(() => {
     const fetchCameras = async () => {
       try {
@@ -50,7 +49,13 @@ export const TrafficFootageCard = () => {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    const selectedCameraObj = cameras.find(cam => cam.id === selectedCamera);
+    const streamUrl = selectedCameraObj?.streaming_url;
+    
+    if (!video || !streamUrl) return;
+
+    setIsLoading(true);
+    setHasError(false);
 
     const handleCanPlay = () => {
       setIsLoading(false);
@@ -62,26 +67,15 @@ export const TrafficFootageCard = () => {
       setHasError(true);
     };
 
+    const handleLoadedData = () => {
+      setIsLoading(false);
+      setHasError(false);
+    };
+
     video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('error', handleError);
+    video.addEventListener('loadeddata', handleLoadedData);
 
-    return () => {
-      video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('error', handleError);
-    };
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const selectedCameraObj = cameras.find(cam => cam.id === selectedCamera);
-    const streamUrl = selectedCameraObj?.streaming_url;
-    
-    if (!video || !streamUrl) return;
-
-    setIsLoading(true);
-    setHasError(false);
-
-    // Clean up previous HLS instance
     if (hlsRef.current) {
       hlsRef.current.destroy();
       hlsRef.current = null;
@@ -104,20 +98,21 @@ export const TrafficFootageCard = () => {
         }
       });
 
+      hls.on(Hls.Events.FRAG_LOADED, () => {
+        setIsLoading(false);
+      });
+
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch(() => {
-          // Auto-play might be blocked, that's OK
         });
       });
 
       hls.loadSource(streamUrl);
       hls.attachMedia(video);
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // For Safari which has native HLS support
       video.src = streamUrl;
       video.addEventListener('loadedmetadata', () => {
         video.play().catch(() => {
-          // Auto-play might be blocked, that's OK
         });
       });
     } else {
@@ -127,6 +122,10 @@ export const TrafficFootageCard = () => {
     }
 
     return () => {
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('error', handleError);
+      video.removeEventListener('loadeddata', handleLoadedData);
+      
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
