@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -49,7 +50,7 @@ export const TrafficCard = () => {
     setError?.(null);
 
     try {
-      const res = await axios.get("http://3.19.63.104:5050/api/traffic-summary", {
+      const res = await axios.get("http://18.191.243.194:5050/api/traffic-summary", {
         params: {
           hours: h,
           ...(cam && cam !== "all" ? { camera_id: cam } : {}),
@@ -81,14 +82,14 @@ export const TrafficCard = () => {
 
   return (
     <DashboardCard title="Live Traffic Feed" icon={<Navigation className="w-5 h-5" />}>
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-2 mb-4">
         <Select value={hours.toString()} onValueChange={(v) => setHours(Number(v))}>
-          <SelectTrigger className="w-24">
+          <SelectTrigger className="w-full sm:w-24 min-h-[44px] sm:min-h-[36px]">
             <SelectValue placeholder="Hours" />
           </SelectTrigger>
           <SelectContent>
             {hoursOptions.map((h) => (
-              <SelectItem key={h} value={h.toString()}>
+              <SelectItem key={h} value={h.toString()} className="min-h-[44px] sm:min-h-[36px]">
                 Last {h}h
               </SelectItem>
             ))}
@@ -99,20 +100,20 @@ export const TrafficCard = () => {
           value={camera}
           onValueChange={(val) => setCamera(val)}
         >
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48 min-h-[44px] sm:min-h-[36px]">
             <SelectValue placeholder="All Cameras" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Cameras</SelectItem>
+            <SelectItem value="all" className="min-h-[44px] sm:min-h-[36px]">All Cameras</SelectItem>
             {cameraFeeds.map((feed) => (
-              <SelectItem key={feed.id} value={feed.id}>
+              <SelectItem key={feed.id} value={feed.id} className="min-h-[44px] sm:min-h-[36px]">
                 {feed.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Button size="sm" onClick={() => fetchSummary(hours, camera, setLiveSummary, setLoadingLive, setErrorLive)} disabled={loadingLive}>
+        <Button size="sm" onClick={() => fetchSummary(hours, camera, setLiveSummary, setLoadingLive, setErrorLive)} disabled={loadingLive} className="min-h-[44px] sm:min-h-[36px] w-full sm:w-auto">
           {loadingLive ? "Loading…" : "Refresh"}
         </Button>
       </div>
@@ -122,22 +123,38 @@ export const TrafficCard = () => {
       </div>
 
       {errorLive && <div className="text-destructive text-sm mb-2">{errorLive}</div>}
-      <div className="bg-muted/50 rounded-lg p-4 mb-8">
+      <div className="bg-muted/50 rounded-lg p-4 mb-8 transition-all duration-200 hover:bg-muted/60 hover:shadow-sm cursor-pointer">
         <div className="flex items-center mb-2">
           <Brain className="w-4 h-4 text-primary mr-1" />
           <span className="text-sm font-medium">AI Traffic Summary</span>
         </div>
-        <p className="text-sm leading-relaxed">
-          {loadingLive ? "Loading…" : liveSummary || "No data available for that selection."}
-        </p>
+        {loadingLive ? (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+        ) : (
+          <p className="text-sm leading-relaxed">
+            {liveSummary || "No data available for that selection."}
+          </p>
+        )}
       </div>
 
       <div>
         <h3 className="text-sm font-medium mb-2">Last 24 Hours</h3>
-        <div className="bg-muted/30 rounded-lg p-4">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {loading24 ? "Loading…" : summary24}
-          </p>
+        <div className="bg-muted/30 rounded-lg p-4 transition-all duration-200 hover:bg-muted/40 hover:shadow-sm cursor-pointer">
+          {loading24 ? (
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-4/5" />
+              <Skeleton className="h-3 w-3/4" />
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {summary24}
+            </p>
+          )}
         </div>
       </div>
     </DashboardCard>

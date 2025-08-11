@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useRef, useEffect } from "react";
 import Hls from "hls.js";
 import axios from "axios";
@@ -30,7 +31,7 @@ export const TrafficFootageCard = () => {
   useEffect(() => {
     const fetchCameras = async () => {
       try {
-        const response = await axios.get("http://3.19.63.104:5050/api/cameras");
+        const response = await axios.get("http://18.191.243.194:5050/api/cameras");
         const cameraList = response.data.cameras;
         setCameras(cameraList);
         if (cameraList.length > 0) {
@@ -140,10 +141,20 @@ export const TrafficFootageCard = () => {
         icon={<Video className="w-5 h-5" />}
         fullWidth
       >
-        <div className="flex items-center justify-center h-48">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground">Loading cameras...</p>
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <div className="relative w-full aspect-video bg-muted/30 rounded-lg overflow-hidden">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <Skeleton className="w-8 h-8 rounded-full" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Skeleton className="h-3 w-48" />
+            <Skeleton className="h-3 w-56" />
+            <Skeleton className="h-3 w-64" />
           </div>
         </div>
       </DashboardCard>
@@ -163,12 +174,12 @@ export const TrafficFootageCard = () => {
             onValueChange={setSelectedCamera}
             disabled={cameras.length === 0}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full min-h-[44px] sm:min-h-[40px]">
               <SelectValue placeholder="Select camera" />
             </SelectTrigger>
             <SelectContent>
               {cameras.map((camera) => (
-                <SelectItem key={camera.id} value={camera.id}>
+                <SelectItem key={camera.id} value={camera.id} className="min-h-[44px] sm:min-h-[36px]">
                   {camera.name}
                 </SelectItem>
               ))}
@@ -211,6 +222,9 @@ export const TrafficFootageCard = () => {
         <div className="text-xs text-muted-foreground">
           <p>Live feed from {cameras.find(c => c.id === selectedCamera)?.name}</p>
           <p>Stream may have a 15-30 second delay</p>
+        </div>
+        <div className="mt-2 p-2 bg-amber-100 border border-amber-300 rounded-lg dark:bg-amber-950 dark:border-amber-800">
+          <p className="text-xs font-medium text-amber-800 dark:text-amber-300">Wait a few seconds between camera switches to prevent buffering issues!</p>
         </div>
       </div>
     </DashboardCard>

@@ -52,13 +52,13 @@ export const WeatherCard = () => {
   }, []);
 
   if (error) return (
-    <div className="bg-card rounded-lg border border-border p-4">
+    <div className="bg-card border border-card-border rounded-lg p-4 sm:p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/20 shadow-md cursor-pointer transform">
       <h2 className="text-xl font-bold text-card-foreground mb-2">Weather</h2>
       <p className="text-destructive">{error}</p>
     </div>
   );
   if (!weather) return (
-    <div className="bg-card rounded-lg border border-border p-4">
+    <div className="bg-card border border-card-border rounded-lg p-4 sm:p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/20 shadow-md cursor-pointer transform">
       <h2 className="text-xl font-bold text-card-foreground mb-2">Weather</h2>
       <p className="text-muted-foreground">Loading weather...</p>
     </div>
@@ -67,7 +67,7 @@ export const WeatherCard = () => {
   const today = weather.forecast.forecastday[0].day;
 
   return (
-    <div className="bg-card rounded-lg border border-border p-4">
+    <div className="bg-card border border-card-border rounded-lg p-4 sm:p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/20 shadow-md cursor-pointer transform">
       <h2 className="text-xl font-bold text-card-foreground mb-2">Weather</h2>
 
       <p className="text-card-foreground">

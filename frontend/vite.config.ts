@@ -14,7 +14,7 @@ import { defineConfig } from 'vite';
       port: 8080,
       proxy: mode === 'development' ? {
         "/api": {
-          target: "http://3.19.63.104:5050",
+          target: "http://18.191.243.194:5050",
           changeOrigin: true,
           secure: false
         }
@@ -22,7 +22,7 @@ import { defineConfig } from 'vite';
     },
     define: {
       __API_URL__: mode === 'production'
-        ? '"http://3.19.63.104:5050"'
+        ? '"http://18.191.243.194:5050"'
         : '""'
     },
     optimizeDeps: {

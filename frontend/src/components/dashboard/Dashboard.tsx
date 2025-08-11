@@ -37,14 +37,14 @@ export const Dashboard = () => {
     >
       <motion.header 
         variants={itemVariants}
-        className="bg-card border-b border-border px-6 py-4"
+        className="bg-card border-b border-border px-4 sm:px-6 py-4"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <motion.h1 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-            className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"
+            className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"
           >
             CitySage Dashboard
           </motion.h1>
@@ -52,7 +52,7 @@ export const Dashboard = () => {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.6 }}
-            className="flex items-center gap-3"
+            className="flex items-center gap-2 sm:gap-3"
           >
             <SocialLinks />
             <ThemeToggle />
@@ -62,12 +62,12 @@ export const Dashboard = () => {
 
       <motion.main 
         variants={itemVariants}
-        className="max-w-7xl mx-auto p-6"
+        className="max-w-7xl mx-auto p-4 sm:p-6"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <motion.div 
             variants={containerVariants}
-            className="space-y-6"
+            className="lg:order-1 space-y-4 sm:space-y-6"
           >
             <motion.div variants={itemVariants}>
               <WeatherCard />
@@ -79,7 +79,7 @@ export const Dashboard = () => {
           
           <motion.div 
             variants={itemVariants}
-            className="md:col-span-2"
+            className="lg:col-span-2 lg:order-2"
           >
             <TrafficCard />
           </motion.div>

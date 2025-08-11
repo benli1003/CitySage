@@ -13,8 +13,9 @@ export const DashboardCard = ({ title, icon, children, className, fullWidth }: D
   return (
     <div 
       className={cn(
-        "bg-card border border-card-border rounded-lg p-6 transition-all duration-200",
-        "hover:shadow-[var(--shadow-card-hover)] shadow-[var(--shadow-card)]",
+        "bg-card border border-card-border rounded-lg p-4 sm:p-6 transition-all duration-300",
+        "hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 hover:border-primary/20",
+        "shadow-md cursor-pointer transform",
         fullWidth && "col-span-full",
         className
       )}
