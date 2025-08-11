@@ -66,8 +66,15 @@ export const Dashboard = () => {
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <motion.div 
+            variants={itemVariants}
+            className="lg:col-span-2 lg:order-2 order-1"
+          >
+            <TrafficCard />
+          </motion.div>
+          
+          <motion.div 
             variants={containerVariants}
-            className="lg:order-1 space-y-4 sm:space-y-6"
+            className="lg:order-1 order-2 space-y-4 sm:space-y-6"
           >
             <motion.div variants={itemVariants}>
               <WeatherCard />
@@ -75,13 +82,6 @@ export const Dashboard = () => {
             <motion.div variants={itemVariants}>
               <WMATAAlertsCard />
             </motion.div>
-          </motion.div>
-          
-          <motion.div 
-            variants={itemVariants}
-            className="lg:col-span-2 lg:order-2"
-          >
-            <TrafficCard />
           </motion.div>
         </div>
       </motion.main>
