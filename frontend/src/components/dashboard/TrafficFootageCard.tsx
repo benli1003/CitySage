@@ -30,7 +30,7 @@ export const TrafficFootageCard = () => {
   useEffect(() => {
     const fetchCameras = async () => {
       try {
-        const response = await axios.get("/api/cameras");
+        const response = await axios.get("http://3.19.63.104:5050/api/cameras");
         const cameraList = response.data.cameras;
         setCameras(cameraList);
         if (cameraList.length > 0) {

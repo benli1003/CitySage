@@ -41,8 +41,8 @@ export const WMATAAlertsCard: React.FC = () => {
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const railPromise = axios.get<{ alerts?: WMATAAlert[] }>("/api/alerts/rail");
-        const busPromise  = axios.get<{ alerts?: WMATAAlert[] }>("/api/alerts/bus");
+        const railPromise = axios.get<{ alerts?: WMATAAlert[] }>("http://3.19.63.104:5050/api/alerts/rail");
+        const busPromise  = axios.get<{ alerts?: WMATAAlert[] }>("http://3.19.63.104:5050/api/alerts/bus");
 
         const [railRes, busRes] = await Promise.all([railPromise, busPromise]);
 
