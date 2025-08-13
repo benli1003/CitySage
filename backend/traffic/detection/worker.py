@@ -85,7 +85,7 @@ def start_camera_worker(camera_id: str, stream_url: str):
             video_reference = stream_url,
             on_prediction = on_prediction,
             confidence = 0.3,
-            max_fps = 10,
+            max_fps = 3,
         )
         print(f"[{camera_id}] Pipeline initialized successfully")
         pipeline.start()
