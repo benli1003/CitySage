@@ -22,7 +22,7 @@ import { defineConfig } from 'vite';
     },
     define: {
       __API_URL__: mode === 'production'
-        ? '"http://18.191.243.194:5050"'
+        ? '""'
         : '""'
     },
     optimizeDeps: {

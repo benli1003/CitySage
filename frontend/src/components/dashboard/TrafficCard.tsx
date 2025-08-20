@@ -50,7 +50,7 @@ export const TrafficCard = () => {
     setError?.(null);
 
     try {
-      const res = await axios.get("http://18.191.243.194:5050/api/traffic-summary", {
+      const res = await axios.get("/api/traffic-summary", {
         params: {
           hours: h,
           ...(cam && cam !== "all" ? { camera_id: cam } : {}),
