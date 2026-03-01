@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source venv311/bin/activate && python -c \"import ultralytics; print\\('ultralytics ok'\\)\" 2>&1; python -c \"import torch; print\\('torch ok', torch.__version__\\)\" 2>&1; python -c \"from ultralytics import YOLO; print\\('YOLO ok'\\)\" 2>&1)",
+      "Bash(python3 -c \"\nfrom ultralytics import YOLO\nimport supervision as sv\nimport numpy as np\nimport os\n\nmodel_path = '/Users/edchan/projects/CitySage/backend/models/yolov8n.pt'\nprint\\('Model exists:', os.path.exists\\(model_path\\)\\)\n\nm = YOLO\\(model_path\\)\nprint\\('Model loaded OK'\\)\n\n# test ByteTrack\ntracker = sv.ByteTrack\\(\\)\nprint\\('ByteTrack OK'\\)\nprint\\('All imports OK'\\)\n\" 2>&1 | grep -v \"^0:\" | grep -v \"WARNING\")"
+    ]
+  }
+}
