@@ -1,3 +1,4 @@
+import os
 import threading
 from flask import Flask
 from flask_cors import CORS
@@ -17,5 +18,8 @@ if __name__ == "__main__":
     # start camera inference in background
     threading.Thread(target=launch_all_cameras, daemon=True).start()
 
-    # run Flask
-    app.run(host="0.0.0.0", port=5050, debug=True)
+    # run Flask. Debug is off by default; enable locally with FLASK_DEBUG=1.
+    # Never enable debug in production: it exposes the Werkzeug debugger,
+    # which allows remote code execution on a reachable host.
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+    app.run(host="0.0.0.0", port=5050, debug=debug)
