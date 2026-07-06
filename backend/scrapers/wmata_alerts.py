@@ -7,7 +7,7 @@ def wmata_bus_incidents(api_key):
     }
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=10)
         print(f"Response status: {response.status_code}")
 
         if response.status_code == 200:
@@ -27,9 +27,9 @@ def wmata_rail_incidents(api_key):
     }
 
     try:
-        response = requests.get(url, headers = headers)
+        response = requests.get(url, headers = headers, timeout=10)
         print(f"Response status: {response.status_code}")
-        
+
         if response.status_code == 200:
             return response.json()
         else:
