@@ -174,3 +174,9 @@ cython_debug/
 .pypirc
 .env
 backend/data/images/*
+
+# Virtual environments
+venv311/
+backend/venv311/
+.venv/
+venv/
