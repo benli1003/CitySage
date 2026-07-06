@@ -144,5 +144,25 @@ def start_camera_worker(camera_id: str, stream_url: str):
         )
         pipeline.start()
         logger.info("[%s] camera detection started", camera_id)
+        return pipeline
     except Exception as e:
         logger.error("[%s] failed to start, camera will be skipped: %s", camera_id, e)
+        return None
+
+
+def stop_camera_worker(camera_id: str, pipeline):
+    """Stop a running pipeline and buffer any partial in-progress count."""
+    if pipeline is not None:
+        try:
+            pipeline.terminate()
+            pipeline.join()
+        except Exception as e:
+            logger.error("[%s] error stopping pipeline: %s", camera_id, e)
+
+    # Flush the partial minute so an in-progress count isn't dropped on cycle.
+    count = active_counts.get(camera_id, 0)
+    if count > 0:
+        minute_ts = last_log_time.get(camera_id, datetime.now()).replace(second=0, microsecond=0)
+        _buffer_count(camera_id, minute_ts, count)
+        active_counts[camera_id] = 0
+    logger.info("[%s] camera detection stopped", camera_id)
