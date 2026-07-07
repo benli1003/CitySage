@@ -2,7 +2,7 @@ import json
 import threading
 import os
 import time
-from .worker import start_camera_worker
+from .worker import start_camera_worker, start_flusher
 
 CONFIG_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -16,7 +16,10 @@ def launch_all_cameras():
         cameras = json.load(file)
         
     print(f"Starting traffic detection for {len(cameras)} cameras...")
-    
+
+    # start the background DB batch-flush thread
+    start_flusher()
+
     threads = []
     for i, cam in enumerate(cameras):
         cam_id = cam.get("id")
