@@ -53,77 +53,111 @@ def get_counts(start: datetime, end: datetime):
         cur.execute(sql, (start, end))
         return cur.fetchall()
 
-# Cameras are sampled in a round-robin (only some run at any moment), so a
-# camera is observed for only part of the window. `events` from get_counts is
-# the number of minutes actually OBSERVED, and `avg_per_min` is the crossing
-# rate DURING those observed minutes. We extrapolate the rate across the full
-# window here, deterministically, rather than asking the LLM to do arithmetic
-# (gpt-4.1-nano is unreliable at math and non-deterministic at temp>0).
-def compute_camera_estimates(stats, start: datetime, end: datetime):
-    """
-    Turn raw (camera_id, observed_minutes, avg_per_min) rows into estimates.
 
-    Returns a list of dicts with observed minutes, the observed rate, and an
-    extrapolated full-window total, sorted busiest-first by rate.
+# Per-hour totals across the window, so summaries can describe how traffic
+# changes through the day (rush-hour peaks, overnight lulls) instead of
+# assuming a single flat rate.
+def get_hourly_counts(start: datetime, end: datetime, camera_id: str = None):
+    sql = """
+      SELECT date_trunc('hour', timestamp) AS hour,
+             SUM(count) AS crossings
+      FROM vehicle_counts
+      WHERE timestamp >= %s
+        AND timestamp <  %s
+        {cam_filter}
+      GROUP BY hour
+      ORDER BY hour;
+    """.format(cam_filter="AND camera_id = %s" if camera_id else "")
+    params = (start, end, camera_id) if camera_id else (start, end)
+    conn = psycopg2.connect(
+        host = DB_HOST,
+        dbname = DB_NAME,
+        user = DB_USER,
+        password = DB_PASSWORD,
+        port = DB_PORT,
+    )
+    with conn, conn.cursor() as cur:
+        cur.execute(sql, params)
+        return cur.fetchall()
+
+# Cameras are sampled in a round-robin, so `events` from get_counts is the
+# number of minutes actually OBSERVED and `avg_per_min` is the crossing rate
+# during those minutes. We report OBSERVED actuals (rate x observed minutes) —
+# no projecting to the full window — so the summary never overstates precision.
+def compute_camera_stats(stats):
     """
-    window_minutes = max(1.0, (end - start).total_seconds() / 60.0)
+    Turn raw (camera_id, observed_minutes, avg_per_min) rows into observed
+    per-camera figures, sorted busiest-first by rate. No extrapolation.
+    """
     rows = []
     for cam_id, observed_minutes, avg_per_min in stats:
         rate = float(avg_per_min or 0.0)
+        obs = int(observed_minutes or 0)
         rows.append({
             "camera_id": cam_id,
-            "observed_minutes": int(observed_minutes or 0),
+            "observed_minutes": obs,
             "rate_per_min": rate,
-            "estimated_total": int(round(rate * window_minutes)),
+            "observed_crossings": int(round(rate * obs)),
         })
     rows.sort(key=lambda r: r["rate_per_min"], reverse=True)
-    return rows, window_minutes
+    return rows
 
 
 # builds the user prompt
-def build_summary_prompt(stats, start: datetime, end: datetime) -> str:
-    estimates, window_minutes = compute_camera_estimates(stats, start, end)
+def build_summary_prompt(stats, start: datetime, end: datetime, hourly=None) -> str:
+    cams = compute_camera_stats(stats)
     header = (
-        f"Traffic summary from {start:%Y-%m-%d %H:%M} to {end:%Y-%m-%d %H:%M} "
-        f"(~{int(round(window_minutes))} min window).\n"
-        "Cameras are sampled part of the time, so totals below are ESTIMATES "
-        "extrapolated from the observed crossing rate. Present them as estimates.\n"
+        f"Traffic report from {start:%Y-%m-%d %H:%M} to {end:%Y-%m-%d %H:%M}.\n"
+        "Figures are observed vehicle crossings from live camera detection.\n"
     )
-    lines = [header]
-    for e in estimates:
+    lines = [header, "Per camera (busiest first):"]
+    for c in cams:
         lines.append(
-            f"• {e['camera_id']}: ~{e['estimated_total']} vehicles estimated "
-            f"({e['rate_per_min']:.1f}/min observed over {e['observed_minutes']} min)"
+            f"• {c['camera_id']}: {c['observed_crossings']} crossings "
+            f"({c['rate_per_min']:.1f}/min over {c['observed_minutes']} min observed)"
         )
+
+    # Hourly shape: lets the model describe how traffic changed through the
+    # day instead of assuming one flat rate across the whole window.
+    if hourly:
+        lines.append("\nCrossings by hour (shows how traffic varied over time):")
+        for hour, crossings in hourly:
+            lines.append(f"• {hour:%a %H:%M}: {int(crossings or 0)} crossings")
+
     lines.append(
-        "\nPlease provide a concise paragraph highlighting the busiest cameras "
-        "and any overall trends you observe. Refer to the totals as estimates. "
-        "Do not invent or recompute numbers; use the figures given. Do not use emojis."
+        "\nWrite a concise paragraph on the busiest cameras and how traffic "
+        "changed over time (e.g. rush-hour peaks vs quieter periods). Traffic "
+        "volume varies throughout the day, so describe the pattern across the "
+        "hours shown rather than assuming a constant rate. Use only the numbers "
+        "given; do not invent or recompute figures. Do not describe the numbers "
+        "as estimates. Do not use emojis."
     )
     return "\n".join(lines)
 
 # generates a summary
-def generate_summary(stats, start: datetime, end: datetime) -> str:
+def generate_summary(stats, start: datetime, end: datetime, hourly=None) -> str:
     if client is None:
-        return generate_fallback_summary(stats, start, end)
-    
+        return generate_fallback_summary(stats, start, end, hourly)
+
     system_prompt = (
         "You are CitySage, a friendly traffic-monitoring assistant.  "
         "Your job is to explain vehicle-count data in simple, everyday language—"
         "no jargon, no long statistics tables.  "
-        "Write as if you're telling a colleague over Slack what happened on the roads."
+        "Write as if you're telling a colleague over Slack what happened on the roads. "
+        "Traffic volume changes throughout the day, so describe how it rose and fell "
+        "across the hours shown. Report the counts as observed facts, never as estimates."
     )
-    user_prompt = build_summary_prompt(stats, start, end) + """
+    user_prompt = build_summary_prompt(stats, start, end, hourly) + """
 
     In a couple of sentences, describe in plain English:
 
-    • Which intersections had the heaviest traffic  
-    • Whether traffic was steady or spiky  
-    • Anything surprising or worth knowing  
+    • Which intersections had the heaviest traffic
+    • How traffic changed over the day — when it peaked and when it was quiet
+    • Anything surprising or worth knowing
 
     Make it sound like you're giving a quick update to a city manager.
     """
-    
+
     try:
         response = client.chat.completions.create(
             model=MODEL,
@@ -138,34 +172,42 @@ def generate_summary(stats, start: datetime, end: datetime) -> str:
         return response.choices[0].message.content.strip()
     except Exception as e:
         print(f"OpenAI API error: {e}")
-        
-        return generate_fallback_summary(stats, start, end)
 
-def generate_fallback_summary(stats, start: datetime, end: datetime) -> str:
+        return generate_fallback_summary(stats, start, end, hourly)
+
+def generate_fallback_summary(stats, start: datetime, end: datetime, hourly=None) -> str:
     if not stats:
         return "No traffic activity detected during this period."
 
-    estimates, _ = compute_camera_estimates(stats, start, end)
-    estimated_total = sum(e["estimated_total"] for e in estimates)
-    busiest = estimates[0] if estimates else None
+    cams = compute_camera_stats(stats)
+    total = sum(c["observed_crossings"] for c in cams)
+    busiest = cams[0] if cams else None
 
     period_desc = f"{start:%H:%M} to {end:%H:%M}"
     if start.date() != end.date():
         period_desc = f"{start:%m/%d %H:%M} to {end:%m/%d %H:%M}"
 
-    summary = (
-        f"Traffic summary for {period_desc}: ~{estimated_total} vehicle crossings "
-        f"estimated (extrapolated from sampled observations). "
-    )
+    summary = f"Traffic report for {period_desc}: {total} vehicle crossings observed. "
 
-    if busiest and len(estimates) > 1:
+    if busiest and len(cams) > 1:
         summary += (
-            f"Busiest location was {busiest['camera_id']} at ~{busiest['rate_per_min']:.1f}/min "
-            f"(~{busiest['estimated_total']} estimated). "
-            f"Activity recorded at {len(estimates)} camera locations."
+            f"Busiest location was {busiest['camera_id']} at {busiest['rate_per_min']:.1f}/min "
+            f"({busiest['observed_crossings']} crossings). "
+            f"Activity recorded at {len(cams)} camera locations. "
         )
     elif busiest:
-        summary += f"All activity at {busiest['camera_id']}."
+        summary += f"All activity at {busiest['camera_id']}. "
+
+    # Describe the daily pattern from the hourly data (peak vs quiet hour).
+    if hourly:
+        valid = [(h, int(c or 0)) for h, c in hourly]
+        if valid:
+            peak = max(valid, key=lambda x: x[1])
+            quiet = min(valid, key=lambda x: x[1])
+            summary += (
+                f"Traffic peaked around {peak[0]:%H:%M} ({peak[1]} crossings) "
+                f"and was quietest around {quiet[0]:%H:%M} ({quiet[1]} crossings)."
+            )
 
     return summary
 
@@ -173,4 +215,5 @@ if __name__ == "__main__":
     end   = datetime.now()
     start = end - timedelta(hours=1)
     stats = get_counts(start, end)
-    print(generate_summary(stats, start, end))
+    hourly = get_hourly_counts(start, end)
+    print(generate_summary(stats, start, end, hourly))
