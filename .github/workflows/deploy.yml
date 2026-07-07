@@ -1,0 +1,75 @@
+name: Deploy to EC2
+
+# Deploys the backend on every push to main by sending a deploy script to the
+# EC2 instance via AWS SSM (Systems Manager). No SSH port is opened — GitHub
+# authenticates to AWS with a scoped IAM user (ssm:SendCommand to one instance).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}   # allow manual "Run workflow" from the Actions tab
+
+concurrency:
+  group: deploy-ec2
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Send deploy command via SSM
+        id: send
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy ${GITHUB_SHA::7} from GitHub Actions" \
+            --timeout-seconds 600 \
+            --parameters '{"commands":[
+              "set -e",
+              "cd /opt/citysage/app",
+              "sudo -u ec2-user git fetch --all --prune",
+              "sudo -u ec2-user git reset --hard origin/main",
+              "sudo -u ec2-user /opt/citysage/venv/bin/pip install --quiet -r requirements.txt",
+              "sudo systemctl restart citysage",
+              "sleep 8",
+              "sudo systemctl is-active citysage"
+            ]}' \
+            --query 'Command.CommandId' --output text)
+          echo "command_id=$CMD_ID" >> "$GITHUB_OUTPUT"
+          echo "Sent SSM command: $CMD_ID"
+
+      - name: Wait for deploy to finish
+        run: |
+          CMD_ID="${{ steps.send.outputs.command_id }}"
+          IID="${{ secrets.EC2_INSTANCE_ID }}"
+          for i in $(seq 1 40); do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$CMD_ID" --instance-id "$IID" \
+              --query 'Status' --output text 2>/dev/null || echo Pending)
+            echo "attempt $i: $STATUS"
+            case "$STATUS" in
+              Success) echo "Deploy succeeded"; break ;;
+              Failed|Cancelled|TimedOut)
+                echo "::error::Deploy $STATUS"
+                aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$IID" \
+                  --query 'StandardErrorContent' --output text
+                exit 1 ;;
+            esac
+            if [ "$i" = "40" ]; then echo "::error::Timed out waiting for deploy"; exit 1; fi
+            sleep 15
+          done
+
+      - name: Show deploy output
+        if: always()
+        run: |
+          CMD_ID="${{ steps.send.outputs.command_id }}"
+          aws ssm get-command-invocation \
+            --command-id "$CMD_ID" --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+            --query 'StandardOutputContent' --output text || true
