@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from datetime import datetime, timedelta
-from .database_summary import get_counts, generate_summary
+from .database_summary import get_counts, get_hourly_counts, generate_summary
 import json
 import os
 
@@ -34,8 +34,12 @@ def traffic_summary():
         for cam, ev, avg in raw
     ]
 
+    # hourly breakdown so the summary can describe how traffic varied over time
+    # (only meaningful for multi-hour windows; skip for a single hour)
+    hourly = get_hourly_counts(start, end, camera_id) if hours > 1 else None
+
     # get summary
-    summary = generate_summary(raw, start, end)
+    summary = generate_summary(raw, start, end, hourly)
 
     return jsonify({
         "summary": summary,
